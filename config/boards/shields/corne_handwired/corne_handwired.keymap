@@ -7,9 +7,12 @@
 #include <dt-bindings/zmk/bt.h>
 
 #define DEFAULT 0
-#define LOWER   1
-#define RAISE   2
-#define ADJUST  3
+#define LAYER1  1
+#define LAYER2  2
+#define LAYER3  3
+#define LAYER4  4
+#define LAYER5  5
+#define ADJUST  6
 
 / {
     keymap {
@@ -17,58 +20,170 @@
 
         default_layer {
             // -----------------------------------------------------------------------------------------
-            // |  TAB |  Q  |  W  |  E  |  R  |  T  |   |  Y  |  U   |  I  |  O  |  P  | BSPC |
-            // | CTRL |  A  |  S  |  D  |  F  |  G  |   |  H  |  J   |  K  |  L  |  ;  |  '   |
-            // | SHFT |  Z  |  X  |  C  |  V  |  B  |   |  N  |  M   |  ,  |  .  |  /  | ESC  |
-            //                    | GUI | LWR | SPC |   | ENT | RSE  | ALT |
+            // |  TAB | L3/Q |  W  |  E  |  R  |  T  |   |  Y  |  U   |  I  |  O  | L3/P | BSPC |
+            // | ESC/CTRL |  A  |  S  |  D  |  F  |  G  |   |  H  |  J   |  K  |  L  |  ;  |  '   |
+            // | SHFT | SHFT/Z | CTRL/X | ALT/C | GUI/V |  B  |   |  N  | GUI/M | ALT/, | CTRL/. | SHFT// | RET  |
+            //                    | ADJ | L2/DEL | L1/BSPC |   | L1/SPC | L2/ENT | ADJ/GUI |
             bindings = <
-                &kp TAB   &kp Q &kp W &kp E &kp R &kp T     &kp Y &kp U  &kp I     &kp O   &kp P    &kp BSPC
-                &kp LCTRL &kp A &kp S &kp D &kp F &kp G     &kp H &kp J  &kp K     &kp L   &kp SEMI &kp SQT
-                &kp LSHFT &kp Z &kp X &kp C &kp V &kp B     &kp N &kp M  &kp COMMA &kp DOT &kp FSLH &kp ESC
-                                &kp LGUI &mo LOWER &kp SPACE   &kp RET &mo RAISE &kp RALT
+                &kp TAB       &lt LAYER3 Q &kp W &kp E &kp R &kp T     &kp Y &kp U &kp I     &kp O     &lt LAYER3 P    &kp BSPC
+                &mt LCTRL ESC &kp A        &kp S &kp D &kp F &kp G     &kp H &kp J &kp K     &kp L     &kp SEMI        &kp SQT
+                &kp LSHFT     &mt LSHFT Z  &mt LCTRL X &mt LALT C &mt LGUI V &kp B     &kp N &mt LGUI M &mt LALT COMMA &mt LCTRL DOT &mt LSHFT FSLH &kp RET
+                                &mo ADJUST &lt LAYER2 DEL &lt LAYER1 BSPC   &lt LAYER1 SPACE &lt LAYER2 RET &lt ADJUST LGUI
             >;
         };
 
-        lower_layer {
+        layer1 {
             // -----------------------------------------------------------------------------------------
-            // |  TAB |  1  |  2  |  3  |  4  |  5  |   |  6  |  7  |  8  |  9  |  0  | BSPC |
-            // | CTRL |     |     |     |     |     |   | LFT | DWN |  UP | RGT |     |      |
-            // | SHFT |     |     |     |     |     |   |     |     |     |     |     |      |
-            //                    | GUI |     | SPC |   | ENT | ADJ | ALT |
+            // |  TAB | PSCR | TRNS | DEL | GRV | TILD |   | ^   | (   | )   | [   | ]   | BSPC |
+            // | ESC/CTRL | !   | @   | #   | $   | %   |   | LFT | DWN | UP  | RGT | '   |  '   |
+            // | SHFT | TRNS | TRNS | TRNS | TRNS | TRNS |   | \   | |   | &   | {   | }   | RET  |
+            //                    | ADJ | L2/DEL | L1/BSPC |   | L1/SPC | L2/ENT | ADJ/GUI |
             bindings = <
-                &kp TAB   &kp N1 &kp N2 &kp N3 &kp N4 &kp N5     &kp N6   &kp N7   &kp N8 &kp N9    &kp N0 &kp BSPC
-                &kp LCTRL &trans &trans &trans &trans &trans     &kp LEFT &kp DOWN &kp UP &kp RIGHT &trans &trans
-                &kp LSHFT &trans &trans &trans &trans &trans     &trans   &trans   &trans &trans    &trans &trans
-                                        &kp LGUI &trans &kp SPACE   &kp RET &mo ADJUST &kp RALT
+                &kp TAB       &kp PSCRN &trans &kp DEL  &kp GRAVE &kp TILDE     &kp CARET &kp LPAR &kp RPAR &kp LBKT &kp RBKT &kp BSPC
+                &mt LCTRL ESC &kp EXCL  &kp AT &kp HASH &kp DLLR  &kp PRCNT     &kp LEFT  &kp DOWN &kp UP   &kp RIGHT &kp SQT &kp SQT
+                &kp LSHFT     &trans    &trans &trans   &trans    &trans        &kp BSLH  &kp PIPE &kp AMPS &kp LBRC &kp RBRC &kp RET
+                                        &mo ADJUST &lt LAYER2 DEL &trans   &trans &lt LAYER2 RET &lt ADJUST LGUI
             >;
         };
 
-        raise_layer {
+        layer2 {
             // -----------------------------------------------------------------------------------------
-            // |  TAB |  !  |  @  |  #  |  $  |  %  |   |  ^  |  &  |  *  |  (  |  )  | BSPC |
-            // | CTRL |     |     |     |     |     |   |  -  |  =  |  [  |  ]  |  \  |  `   |
-            // | SHFT |     |     |     |     |     |   |  _  |  +  |  {  |  }  | "|" |  ~   |
-            //                    | GUI | ADJ | SPC |   | ENT |     | ALT |
+            // |  TAB | GUI1 | GUI2 | GUI3 | GUI4 | GUI5 |   | +   | 7   | 8   | 9   | 0   | BSPC |
+            // | ESC/CTRL | ALT1 | ALT2 | ALT3 | ALT4 | ALT5 |   | =   | 4   | 5   | 6   | *   |  '   |
+            // | SHFT | SHFT | NONE | NONE | NONE | NONE |   | -   | 1   | 2   | 3   | _   | RET  |
+            //                    | ADJ | L2/DEL | L1/BSPC |   | L1/SPC | L2/ENT | ADJ/GUI |
             bindings = <
-                &kp TAB   &kp EXCL &kp AT &kp HASH &kp DLLR &kp PRCNT   &kp CARET &kp AMPS  &kp ASTRK &kp LPAR &kp RPAR &kp BSPC
-                &kp LCTRL &trans   &trans &trans   &trans   &trans      &kp MINUS &kp EQUAL &kp LBKT  &kp RBKT &kp BSLH &kp GRAVE
-                &kp LSHFT &trans   &trans &trans   &trans   &trans      &kp UNDER &kp PLUS  &kp LBRC  &kp RBRC &kp PIPE &kp TILDE
-                                          &kp LGUI &mo ADJUST &kp SPACE   &kp RET &trans &kp RALT
+                &kp TAB       &kp LG(N1) &kp LG(N2) &kp LG(N3) &kp LG(N4) &kp LG(N5)     &kp PLUS  &kp N7 &kp N8 &kp N9 &kp N0    &kp BSPC
+                &mt LCTRL ESC &kp LA(N1) &kp LA(N2) &kp LA(N3) &kp LA(N4) &kp LA(N5)     &kp EQUAL &kp N4 &kp N5 &kp N6 &kp STAR  &kp SQT
+                &kp LSHFT     &kp LSHFT  &none      &none      &none      &none          &kp MINUS &kp N1 &kp N2 &kp N3 &kp UNDER &kp RET
+                                          &mo ADJUST &trans &lt LAYER1 BSPC   &lt LAYER1 SPACE &trans &lt ADJUST LGUI
+            >;
+        };
+
+        layer3 {
+            // -----------------------------------------------------------------------------------------
+            // |  TAB | BRIU | NONE | MFFD | MNXT | VOLU |   | NONE | NONE | NONE | NONE | APP | BSPC |
+            // | ESC/CTRL | GUI/TRNS | ALT/TRNS | CTRL/MSTP | SHFT/MPLY | MUTE |   | NONE | NONE | NONE | NONE | NONE |  '   |
+            // | SHFT | BRID | NONE | MRWD | MPRV | VOLD |   | NONE | NONE | NONE | NONE | NONE | RET  |
+            //                    | ADJ | L2/DEL | L1/BSPC |   | L1/SPC | L2/ENT | ADJ/GUI |
+            bindings = <
+                &kp TAB       &kp C_BRI_UP &none &kp C_FF   &kp C_NEXT &kp C_VOL_UP     &none &none &none &none &kp K_APP &kp BSPC
+                &mt LCTRL ESC &mt LGUI LGUI &mt LALT LALT &mt LCTRL C_STOP &mt LSHFT C_PP &kp C_MUTE     &none &none &none &none &none &kp SQT
+                &kp LSHFT     &kp C_BRI_DN &none &kp C_RW   &kp C_PREV &kp C_VOL_DN     &none &none &none &none &none &kp RET
+                                          &mo ADJUST &lt LAYER2 DEL &lt LAYER1 BSPC   &lt LAYER1 SPACE &lt LAYER2 RET &lt ADJUST LGUI
+            >;
+        };
+
+        layer4 {
+            // -----------------------------------------------------------------------------------------
+            // |  TAB | NONE | NONE | NONE | NONE | NONE |   | HOME | PGDN | PGUP | END | INS | BSPC |
+            // | ESC/CTRL | GUI/TRNS | ALT/TRNS | CTRL/TRNS | SHFT/TRNS | NONE |   | LEFT | DOWN | UP | RIGHT | DEL |  '   |
+            // | SHFT | NONE | NONE | NONE | NONE | NONE |   | UNDO | CUT | COPY | PSTE | FIND | RET  |
+            //                    | ADJ | L2/DEL | L1/BSPC |   | L1/SPC | L2/ENT | ADJ/GUI |
+            bindings = <
+                &kp TAB       &none &none &none &none &none     &kp HOME &kp PG_DN &kp PG_UP &kp END &kp INS &kp BSPC
+                &mt LCTRL ESC &mt LGUI LGUI &mt LALT LALT &mt LCTRL LCTRL &mt LSHFT LSHFT &none     &kp LEFT &kp DOWN &kp UP &kp RIGHT &kp DEL &kp SQT
+                &kp LSHFT     &none &none &none &none &none     &kp K_UNDO &kp K_CUT &kp K_COPY &kp K_PASTE &kp K_FIND &kp RET
+                                          &mo ADJUST &lt LAYER2 DEL &lt LAYER1 BSPC   &lt LAYER1 SPACE &lt LAYER2 RET &lt ADJUST LGUI
+            >;
+        };
+
+        layer5 {
+            // -----------------------------------------------------------------------------------------
+            // |  TAB | PSCR | F7  | F8  | F9  | F10 |   | NONE | NONE | NONE | NONE | TRNS | BSPC |
+            // | ESC/CTRL | SLCK | F4  | F5  | F6  | F11 |   | NONE | SHFT/TRNS | CTRL/TRNS | ALT/TRNS | GUI/TRNS |  '   |
+            // | SHFT | PAUS | F1  | F2  | F3  | F12 |   | NONE | NONE | NONE | NONE | NONE | RET  |
+            //                    | ADJ | L2/DEL | L1/BSPC |   | L1/SPC | L2/ENT | ADJ/GUI |
+            bindings = <
+                &kp TAB       &kp PSCRN &kp F7 &kp F8 &kp F9 &kp F10     &none &none &none &none &trans &kp BSPC
+                &mt LCTRL ESC &kp SLCK  &kp F4 &kp F5 &kp F6 &kp F11     &none &mt LSHFT LSHFT &mt LCTRL LCTRL &mt LALT LALT &mt LGUI LGUI &kp SQT
+                &kp LSHFT     &kp PAUSE_BREAK &kp F1 &kp F2 &kp F3 &kp F12     &none &none &none &none &none &kp RET
+                                          &mo ADJUST &lt LAYER2 DEL &lt LAYER1 BSPC   &lt LAYER1 SPACE &lt LAYER2 RET &lt ADJUST LGUI
             >;
         };
 
         adjust_layer {
             // -----------------------------------------------------------------------------------------
-            // | BTCLR| BT1 | BT2 | BT3 | BT4 | BT5 |   | BOOT|     |     |     |     |      |
-            // |      |     |     |     |     |     |   |     |     |     |     |     |      |
-            // |      |     |     |     |     |     |   |     |     |     |     |     |      |
+            // |  TAB | BOOTL | BT1 | BT2 | BT3 | BT4 |   | BT5 |     |     |     | BOOTR | BSPC |
+            // | ESC/CTRL | BTCLR |     |     |     |     |   |     |     |     |     |     |  '   |
+            // | SHFT |     |     |     |     |     |   |     |     |     |     |     | RET  |
             //                    |     |     |     |   |     |     |     |
             bindings = <
-                &bt BT_CLR &bt BT_SEL 0 &bt BT_SEL 1 &bt BT_SEL 2 &bt BT_SEL 3 &bt BT_SEL 4   &bootloader &trans &trans &trans &trans &trans
-                &trans     &trans       &trans       &trans       &trans       &trans         &trans      &trans &trans &trans &trans &trans
-                &trans     &trans       &trans       &trans       &trans       &trans         &trans      &trans &trans &trans &trans &trans
+                &kp TAB   &bootloader &bt BT_SEL 0 &bt BT_SEL 1 &bt BT_SEL 2 &bt BT_SEL 3   &bt BT_SEL 4 &trans &trans &trans &bootloader &kp BSPC
+                &mt LCTRL ESC &bt BT_CLR &trans       &trans       &trans       &trans         &trans      &trans &trans &trans &trans &kp SQT
+                &kp LSHFT &trans       &trans       &trans       &trans       &trans         &trans      &trans &trans &trans &trans &kp RET
                                                      &trans       &trans       &trans         &trans      &trans &trans
             >;
+        };
+    };
+
+    combos {
+        compatible = "zmk,combos";
+
+        combo_lbrc {
+            timeout-ms = <50>;
+            key-positions = <3 4>;
+            bindings = <&kp LBKT>;
+        };
+
+        combo_rbrc {
+            timeout-ms = <50>;
+            key-positions = <7 8>;
+            bindings = <&kp RBKT>;
+        };
+
+        combo_lcbr {
+            timeout-ms = <50>;
+            key-positions = <26 27>;
+            bindings = <&kp LBRC>;
+        };
+
+        combo_rcbr {
+            timeout-ms = <50>;
+            key-positions = <31 32>;
+            bindings = <&kp RBRC>;
+        };
+
+        combo_esc {
+            timeout-ms = <50>;
+            key-positions = <19 20>;
+            bindings = <&kp ESC>;
+        };
+
+        combo_bspc {
+            timeout-ms = <50>;
+            key-positions = <20 21>;
+            bindings = <&kp BSPC>;
+        };
+
+        combo_caps {
+            timeout-ms = <50>;
+            key-positions = <15 16>;
+            bindings = <&kp CAPS>;
+        };
+
+        combo_tab {
+            timeout-ms = <50>;
+            key-positions = <14 15>;
+            bindings = <&kp TAB>;
+        };
+
+        combo_dquo {
+            timeout-ms = <50>;
+            key-positions = <21 22>;
+            bindings = <&kp DQT>;
+        };
+
+        combo_enter {
+            timeout-ms = <50>;
+            key-positions = <19 21>;
+            bindings = <&kp RET>;
+        };
+
+        combo_layer5 {
+            timeout-ms = <50>;
+            key-positions = <37 38>;
+            bindings = <&mo LAYER5>;
         };
     };
 };
