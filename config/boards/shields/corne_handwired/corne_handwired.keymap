@@ -68,7 +68,7 @@
             //                    | ADJ | L2/DEL | L1/BSPC |   | L1/SPC | L2/ENT | ADJ/GUI |
             bindings = <
                 &kp TAB       &kp C_BRI_UP &none &kp C_FF   &kp C_NEXT &kp C_VOL_UP     &none &none &none &none &kp K_APP &kp BSPC
-                &mt LCTRL ESC &mt LGUI LGUI &mt LALT LALT &mt LCTRL C_STOP &mt LSHFT C_PP &kp C_MUTE     &none &none &none &none &none &kp SQT
+                &mt LCTRL ESC &mt LGUI LGUI &mt LEFT_ALT LEFT_ALT &mt LCTRL C_STOP &mt LSHFT C_PP &kp C_MUTE     &none &none &none &none &none &kp SQT
                 &kp LSHFT     &kp C_BRI_DN &none &kp C_RW   &kp C_PREV &kp C_VOL_DN     &none &none &none &none &none &kp RET
                                           &mo ADJUST &lt LAYER2 DEL &lt LAYER1 BSPC   &lt LAYER1 SPACE &lt LAYER2 RET &lt ADJUST LGUI
             >;
@@ -82,7 +82,7 @@
             //                    | ADJ | L2/DEL | L1/BSPC |   | L1/SPC | L2/ENT | ADJ/GUI |
             bindings = <
                 &kp TAB       &none &none &none &none &none     &kp HOME &kp PG_DN &kp PG_UP &kp END &kp INS &kp BSPC
-                &mt LCTRL ESC &mt LGUI LGUI &mt LALT LALT &mt LCTRL LCTRL &mt LSHFT LSHFT &none     &kp LEFT &kp DOWN &kp UP &kp RIGHT &kp DEL &kp SQT
+                &mt LCTRL ESC &mt LGUI LGUI &mt LEFT_ALT LEFT_ALT &mt LCTRL LCTRL &mt LSHFT LSHFT &none     &kp LEFT &kp DOWN &kp UP &kp RIGHT &kp DEL &kp SQT
                 &kp LSHFT     &none &none &none &none &none     &kp K_UNDO &kp K_CUT &kp K_COPY &kp K_PASTE &kp K_FIND &kp RET
                                           &mo ADJUST &lt LAYER2 DEL &lt LAYER1 BSPC   &lt LAYER1 SPACE &lt LAYER2 RET &lt ADJUST LGUI
             >;
@@ -96,7 +96,7 @@
             //                    | ADJ | L2/DEL | L1/BSPC |   | L1/SPC | L2/ENT | ADJ/GUI |
             bindings = <
                 &kp TAB       &kp PSCRN &kp F7 &kp F8 &kp F9 &kp F10     &none &none &none &none &trans &kp BSPC
-                &mt LCTRL ESC &kp SLCK  &kp F4 &kp F5 &kp F6 &kp F11     &none &mt LSHFT LSHFT &mt LCTRL LCTRL &mt LALT LALT &mt LGUI LGUI &kp SQT
+                &mt LCTRL ESC &kp SLCK  &kp F4 &kp F5 &kp F6 &kp F11     &none &mt LSHFT LSHFT &mt LCTRL LCTRL &mt LEFT_ALT LEFT_ALT &mt LGUI LGUI &kp SQT
                 &kp LSHFT     &kp PAUSE_BREAK &kp F1 &kp F2 &kp F3 &kp F12     &none &none &none &none &none &kp RET
                                           &mo ADJUST &lt LAYER2 DEL &lt LAYER1 BSPC   &lt LAYER1 SPACE &lt LAYER2 RET &lt ADJUST LGUI
             >;
