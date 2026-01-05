@@ -27,6 +27,10 @@ Each half of the keyboard must be flashed separately.
 5. Drag and drop the corresponding `.uf2` file onto the drive
 6. The device will automatically reboot with the new firmware
 7. Repeat for the other half
+8. **Important:** After flashing new firmware, clear the Bluetooth profiles to prevent cached behavior:
+   - Hold left inner thumb (ADJUST layer) + press A
+   - This clears any cached keyboard state that might conflict with the new firmware
+   - Recommended even if you only use USB cable
 
 **Files:**
 - `corne_handwired_left-nice_nano_v2-zmk.uf2` - for the left half
@@ -181,10 +185,18 @@ This repository is set up to build automatically using GitHub Actions.
 - Remove "Corne Handwired" from your device's Bluetooth settings
 - Re-pair from scratch
 
-**Keys not working as expected:**
-- Check which profile you're on (try switching profiles)
-- Clear the current Bluetooth profile and re-pair
-- Reflash the firmware
+**Keys not working as expected (especially C or comma activating wrong layer):**
+- **FIRST:** Clear the Bluetooth profile even if using USB: Hold left inner thumb + A
+- This clears cached keyboard state that can override firmware behavior
+- After clearing profile, unplug and replug USB cable (or power cycle if on Bluetooth)
+- If still not working: Check which Bluetooth profile you're on (try switching profiles)
+- Last resort: Reflash the firmware and immediately clear all Bluetooth profiles
+
+**C and comma keys activating Layer 2 instead of Alt:**
+- This is a cached state issue
+- Hold left inner thumb (ADJUST) + press A to clear the Bluetooth profile
+- The fix works immediately even when using USB cable
+- Always clear Bluetooth profiles after flashing new firmware
 
 **Split halves not communicating:**
 - Make sure both halves are powered on
