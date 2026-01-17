@@ -1,9 +1,52 @@
 /*
  * Left Half - Corne Handwired
  * Columns: P0.17, P0.20, P0.22, P0.24, P1.00, P0.11
+ * Encoder: A=P1.07, B=P1.02, SW=P1.01
  */
 
 #include "corne_handwired.dtsi"
+
+/ {
+    chosen {
+        zmk,kscan = &kscan_composite;
+    };
+
+    kscan_direct: kscan_direct {
+        compatible = "zmk,kscan-gpio-direct";
+        wakeup-source;
+        input-gpios = <&gpio1 1 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+    };
+
+    kscan_composite: kscan_composite {
+        compatible = "zmk,kscan-composite";
+        rows = <4>;
+        columns = <13>;
+
+        matrix {
+            kscan = <&kscan0>;
+        };
+
+        direct {
+            kscan = <&kscan_direct>;
+            row-offset = <0>;
+            column-offset = <12>;
+        };
+    };
+
+    encoder: encoder {
+        compatible = "alps,ec11";
+        a-gpios = <&gpio1 7 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>;
+        b-gpios = <&gpio1 2 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>;
+        steps = <80>;
+        status = "okay";
+    };
+
+    sensors: sensors {
+        compatible = "zmk,keymap-sensors";
+        sensors = <&encoder>;
+        triggers-per-rotation = <20>;
+    };
+};
 
 &kscan0 {
     col-gpios
