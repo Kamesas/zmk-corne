@@ -1,6 +1,6 @@
 /*
  * Left Half - Corne Handwired
- * SIMPLIFIED TEST: Encoder rotation only (no button)
+ * Using nRF52840 hardware QDEC driver for encoder
  * Encoder: A=P1.07, B=P1.02
  */
 
@@ -17,14 +17,24 @@
         sensors = <&encoder>;
         triggers-per-rotation = <20>;
     };
+};
 
-    encoder: encoder {
-        compatible = "alps,ec11";
-        a-gpios = <&gpio1 7 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>;
-        b-gpios = <&gpio1 2 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>;
-        steps = <80>;
-        status = "okay";
+&pinctrl {
+    qdec_default: qdec_default {
+        group1 {
+            psels = <NRF_PSEL(QDEC_A, 1, 7)>,
+                    <NRF_PSEL(QDEC_B, 1, 2)>;
+            bias-pull-up;
+        };
     };
+};
+
+encoder: &qdec0 {
+    status = "okay";
+    led-pre = <0>;
+    steps = <80>;
+    pinctrl-0 = <&qdec_default>;
+    pinctrl-names = "default";
 };
 
 &kscan0 {
