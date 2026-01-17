@@ -34,7 +34,7 @@
                                 &mo ADJUST &lt LAYER2 DEL &lt LAYER1 BSPC   &lt LAYER1 SPACE &lt LAYER2 RET &lt ADJUST LGUI
                 &kp C_PP
             >;
-            sensor-bindings = <&inc_dec_kp C_VOL_UP C_VOL_DN>;
+            sensor-bindings = <&inc_dec_kp C_VOL_DN C_VOL_UP>;
         };
 
         layer1 {
@@ -51,7 +51,7 @@
                                         &mo ADJUST &lt LAYER2 DEL &trans   &trans &lt LAYER2 RET &lt ADJUST LGUI
                 &kp C_MUTE
             >;
-            sensor-bindings = <&inc_dec_kp C_BRI_UP C_BRI_DN>;
+            sensor-bindings = <&inc_dec_kp C_BRI_DN C_BRI_UP>;
         };
 
         layer2 {
@@ -67,7 +67,7 @@
                                           &mo ADJUST &trans &lt LAYER1 BSPC   &lt LAYER1 SPACE &trans &lt ADJUST LGUI
                 &kp LC(N0)
             >;
-            sensor-bindings = <&inc_dec_kp LC(EQUAL) LC(MINUS)>;
+            sensor-bindings = <&inc_dec_kp LC(MINUS) LC(EQUAL)>;
         };
 
         layer3 {
@@ -83,7 +83,7 @@
                                           &mo ADJUST &lt LAYER2 DEL &lt LAYER1 BSPC   &lt LAYER1 SPACE &lt LAYER2 RET &lt ADJUST LGUI
                 &trans
             >;
-            sensor-bindings = <&inc_dec_kp C_VOL_UP C_VOL_DN>;
+            sensor-bindings = <&inc_dec_kp C_VOL_DN C_VOL_UP>;
         };
 
         layer4 {
@@ -99,7 +99,7 @@
                                           &mo ADJUST &lt LAYER2 DEL &lt LAYER1 BSPC   &lt LAYER1 SPACE &lt LAYER2 RET &lt ADJUST LGUI
                 &trans
             >;
-            sensor-bindings = <&inc_dec_kp C_VOL_UP C_VOL_DN>;
+            sensor-bindings = <&inc_dec_kp C_VOL_DN C_VOL_UP>;
         };
 
         layer5 {
@@ -115,7 +115,7 @@
                                           &mo ADJUST &lt LAYER2 DEL &lt LAYER1 BSPC   &lt LAYER1 SPACE &lt LAYER2 RET &lt ADJUST LGUI
                 &trans
             >;
-            sensor-bindings = <&inc_dec_kp C_VOL_UP C_VOL_DN>;
+            sensor-bindings = <&inc_dec_kp C_VOL_DN C_VOL_UP>;
         };
 
         adjust_layer {
@@ -131,7 +131,7 @@
                                                      &trans       &trans       &trans         &trans      &trans &trans
                 &trans
             >;
-            sensor-bindings = <&inc_dec_kp C_VOL_UP C_VOL_DN>;
+            sensor-bindings = <&inc_dec_kp C_VOL_DN C_VOL_UP>;
         };
     };
 
