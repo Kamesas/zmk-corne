@@ -246,13 +246,13 @@
         combo_lpar {
             timeout-ms = <50>;
             key-positions = <8 9>;
-            bindings = <&kp LPAR>;
+            bindings = <&kp RPAR>;
         };
 
         combo_rpar {
             timeout-ms = <50>;
             key-positions = <2 3>;
-            bindings = <&kp RPAR>;
+            bindings = <&kp LPAR>;
         };
     };
 };
