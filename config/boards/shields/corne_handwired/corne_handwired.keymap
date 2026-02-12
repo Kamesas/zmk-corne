@@ -221,35 +221,42 @@
 
         combo_fat_arrow {
             timeout-ms = <50>;
-            key-positions = <18 19>;
+            key-positions = <16 17>;
             bindings = <&fat_arrow>;
-        };
-
-        combo_minus {
-            timeout-ms = <50>;
-            key-positions = <32 33>;
-            bindings = <&kp MINUS>;
         };
 
         combo_under {
             timeout-ms = <50>;
-            key-positions = <33 34>;
+            key-positions = <32 33>;
             bindings = <&kp UNDER>;
         };
 
+
         combo_equal {
             timeout-ms = <50>;
-            key-positions = <6 7>;
+            key-positions = <18 19>;
             bindings = <&kp EQUAL>;
         };
 
-        combo_lpar {
+        combo_minus {
+            timeout-ms = <50>;
+            key-positions = <30 31>;
+            bindings = <&kp MINUS>;
+        };
+
+        combo_plus {
+            timeout-ms = <50>;
+            key-positions = <6 7>;
+            bindings = <&kp PLUS>;
+        };
+
+        combo_rpar {
             timeout-ms = <50>;
             key-positions = <8 9>;
             bindings = <&kp RPAR>;
         };
 
-        combo_rpar {
+        combo_lpar {
             timeout-ms = <50>;
             key-positions = <2 3>;
             bindings = <&kp LPAR>;
