@@ -1,3 +1,5 @@
+name: zmk-keyboard-corne-handwired
+
 build:
   settings:
     board_root: .
