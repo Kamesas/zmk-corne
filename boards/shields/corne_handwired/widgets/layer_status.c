@@ -47,7 +47,6 @@ int zmk_widget_layer_status_init(struct zmk_widget_layer_status *widget, lv_obj_
 
     widget->label = lv_label_create(widget->obj);
     lv_label_set_text(widget->label, "0");
-    lv_obj_set_style_text_font(widget->label, &lv_font_montserrat_28, LV_PART_MAIN);
     lv_obj_align(widget->label, LV_ALIGN_CENTER, 0, 0);
 
     sys_slist_append(&widgets, &widget->node);
