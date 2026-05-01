@@ -3,10 +3,8 @@
 
 #include <zmk/display.h>
 
-#include "widgets/layer_status.h"
 #include "widgets/peripheral_status.h"
 
-static struct zmk_widget_layer_status layer_status_widget;
 static struct zmk_widget_peripheral_status peripheral_status_widget;
 
 lv_obj_t *zmk_display_status_screen(void) {
@@ -20,9 +18,6 @@ lv_obj_t *zmk_display_status_screen(void) {
     lv_obj_t *logo = lv_label_create(screen);
     lv_label_set_text(logo, "AS");
     lv_obj_align(logo, LV_ALIGN_TOP_MID, 0, 4);
-
-    zmk_widget_layer_status_init(&layer_status_widget, screen);
-    lv_obj_align(zmk_widget_layer_status_obj(&layer_status_widget), LV_ALIGN_CENTER, 0, 0);
 
     zmk_widget_peripheral_status_init(&peripheral_status_widget, screen);
     lv_obj_align(zmk_widget_peripheral_status_obj(&peripheral_status_widget),

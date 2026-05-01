@@ -5,6 +5,5 @@ if(CONFIG_SHIELD_CORNE_HANDWIRED_RIGHT)
     # explicitly so our custom widgets can use <zmk/display.h>, etc.
     zephyr_library_include_directories(${ZEPHYR_BASE}/../zmk/app/include)
     zephyr_library_sources(custom_status_screen.c)
-    zephyr_library_sources(widgets/layer_status.c)
     zephyr_library_sources(widgets/peripheral_status.c)
 endif()

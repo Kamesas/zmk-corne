@@ -51,4 +51,12 @@ choice LV_COLOR_DEPTH
     default LV_COLOR_DEPTH_1
 endchoice
 
+# ZMK_DISPLAY does `imply LV_CONF_MINIMAL`, which turns off label widgets and
+# fonts by default. Re-enable what the custom status screen needs.
+config LV_USE_LABEL
+    default y
+
+config LV_FONT_MONTSERRAT_14
+    default y
+
 endif # LVGL
