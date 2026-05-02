@@ -33,12 +33,14 @@ the new firmware on each. Power-cycle to re-pair.
 
 ## Current state (working)
 
-- Branch: `corne-dactyl`, status: **shipped horizontal display**.
-- Built-in ZMK status screen on the left-half OLED. Shows battery / output /
-  connection icons and reflects layer state. Keyboard fully functional; right
-  thumb (DEL) cold-joint fixed by user.
-- Custom vertical status screen attempt was abandoned after extended bisection.
-  See "Why the custom vertical screen was dropped" below.
+- Branch: `corne-dactyl`, status: **shipped vertical custom display**.
+- Custom 32×128 vertical status screen on the left-half OLED, ported from
+  the nice_view canvas pattern. Three 32×32 canvases drawn upright then
+  rotated 270° onto the 128×32 framebuffer:
+  - left: "AS" monogram (Montserrat 22)
+  - center: large active-layer digit (Montserrat 28)
+  - right: endpoint/connection icon — USB / WIFI / CLOSE / SETTINGS
+- Keyboard fully functional; right thumb (DEL) cold-joint fixed by user.
 
 ## Critical build pitfalls (kept here so we don't relearn them)
 
@@ -65,67 +67,50 @@ the new firmware on each. Power-cycle to re-pair.
      `LV_CONF_MINIMAL`. Use canvas-level rotation like nice_view if you need
      vertical orientation.
 
-## Why the custom vertical screen was dropped
+## Custom vertical screen — how it's wired
 
-We attempted a vertical 32×128 custom status screen. After a multi-step
-bisection (boot hang → memory pool fix → label invisible → font fallback to
-missing-glyph rectangles), it became clear that getting a custom screen with
-labels working under `LV_CONF_MINIMAL` requires reproducing nice_view's full
-widget pattern: `lv_canvas` instead of regular widgets, plus a custom
-`rotate_canvas()` helper. That's a real port, not an incremental fix.
+Reference for any future widget work on this shield. Pattern lifted from
+`zmk/app/boards/shields/nice_view/widgets/`.
 
-The built-in horizontal status screen already covers the practical part of
-Phase 1 (icons + layer indication). Vertical orientation was a nice-to-have,
-not a blocker. We chose to ship working horizontal and revisit vertical only
-if requested.
+- `widgets/util.{c,h}` — `rotate_canvas()` (sw_rotate 270° on a square L8
+  buffer) and small wrappers around `lv_draw_*` that drive a canvas via a
+  layer. `CANVAS_SIZE = 32`.
+- `widgets/status.{c,h}` — three-canvas widget. Each section draws upright
+  into its 32×32 canvas, then `rotate_canvas()` rolls the buffer 270°
+  before LVGL composites onto the framebuffer.
+- `custom_status_screen.c` — strong override of `zmk_display_status_screen()`,
+  enabled by `CONFIG_ZMK_DISPLAY_STATUS_SCREEN_CUSTOM=y`.
+- `CMakeLists.txt` — gates sources on `CONFIG_ZMK_DISPLAY_STATUS_SCREEN_CUSTOM`,
+  guards `widgets/status.c` on central only (peripheral can't link layer
+  events), and adds `${CMAKE_SOURCE_DIR}/include` so shield sources can find
+  `<zmk/...>` headers (they compile under the zephyr target, not app).
+- `Kconfig.defconfig` — `STATUS_SCREEN_CUSTOM`, mem pool 8192,
+  `WORK_QUEUE_DEDICATED`, `LV_USE_LABEL`, `LV_USE_CANVAS`, Montserrat 14/22/28.
 
-### If you ever pick this up again
+### Pitfalls already hit
 
-- Reference: `zmk/app/boards/shields/nice_view/widgets/status.c` and its
-  `Kconfig.defconfig`.
-- Don't try `lv_disp_set_rotation()` — it will hang.
-- Don't bisect feature-by-feature. Port the whole nice_view pattern (canvases
-  + `rotate_canvas` + the matching Kconfig: memory pool 8192, dedicated work
-  queue, fonts) in one commit.
-- Three canvases (top/middle/bottom) on a 32-wide × 128-tall logical canvas,
-  each rotated 90° before being placed onto the 128×32 framebuffer.
+- Forgetting `zephyr_library_include_directories(${CMAKE_SOURCE_DIR}/include)`
+  causes `<zmk/display.h>: No such file` at compile time.
+- `lv_disp_set_rotation()` still hangs under `LV_CONF_MINIMAL`. Don't use it.
+- `LV_Z_MEM_POOL_SIZE` must be 8192 once `lv_canvas_create` is in play —
+  4096 silently hangs the central.
+- Adding a Montserrat size requires both `LV_FONT_MONTSERRAT_NN=y` and the
+  `LV_FONT_DEFAULT` choice already pointing at an enabled font.
 
-### Prompt to use in a fresh session
+## Display feature plan
 
-Paste verbatim into a new Claude Code chat in this repo. The fresh session
-will load this `CLAUDE.md` automatically.
+**Phase 1 (shipped):**
+- ✅ Endpoint / connection icon (USB / WIFI / CLOSE / SETTINGS)
+- ✅ Layer indication (large digit)
+- ✅ Custom vertical layout with AS monogram
 
-```
-Goal: Vertical 32×128 status screen on the left half's SSD1306 OLED,
-showing AS logo (top), large layer digit (middle), peripheral connection
-icon (bottom).
-
-Constraints (read CLAUDE.md first — non-negotiable):
-- Don't use lv_disp_set_rotation; it hangs under LV_CONF_MINIMAL.
-- Use canvas-level rotation (lv_canvas + rotate helper) like nice_view.
-- Set LV_Z_MEM_POOL_SIZE=8192, ZMK_DISPLAY_WORK_QUEUE_DEDICATED, fonts
-  + LV_FONT_DEFAULT in Kconfig.defconfig from the start.
-- LVGL 9 API only (LV_DISP_ROTATION_*, not LV_DISP_ROT_*).
-
-Approach: port nice_view's pattern wholesale —
-zmk/app/boards/shields/nice_view/widgets/status.c — adapting canvas
-sizes for 128×32 instead of 160×68. ONE commit. No bisection.
-
-If you can't get this working in one or two commits, stop and say so —
-don't keep iterating with one-line guesses.
-```
-
-## Display feature plan (deferred)
-
-**Phase 1 (shipped horizontal):**
-- ✅ Battery / output / connection icons (built-in)
-- ✅ Layer indication (built-in)
-
-**Phase 2 (deferred until a vertical port is done):**
+**Phase 2 (next, additive on the same canvas pattern):**
 - Caps-lock indicator
 - Modifier display (Shift/Ctrl/Alt/GUI)
 - WPM counter
-- Custom layout: AS logo, large layer digit, peripheral status
+- Battery icons (when battery is added)
+- Peripheral-half connection icon (right-half link health, distinct from BLE
+  endpoint icon — uses `zmk_split_bt_central_status_changed` on central)
 
 ## File layout
 
@@ -133,10 +118,11 @@ don't keep iterating with one-line guesses.
 boards/shields/corne_handwired/
   Kconfig.defconfig             — shield defaults (display + LVGL)
   Kconfig.shield                — shield declarations
-  CMakeLists.txt                — empty placeholder; re-add custom screen
-                                  sources here gated on
-                                  CONFIG_ZMK_DISPLAY_STATUS_SCREEN_CUSTOM if
-                                  the vertical port is revived.
+  CMakeLists.txt                — wires custom_status_screen + widgets,
+                                  gated on CONFIG_ZMK_DISPLAY_STATUS_SCREEN_CUSTOM
+  custom_status_screen.c        — strong override of zmk_display_status_screen
+  widgets/status.{c,h}          — three-canvas vertical status widget (central)
+  widgets/util.{c,h}            — rotate_canvas + lv_canvas helpers
   corne_handwired.conf          — runtime config (sleep, BLE, USB logging)
   corne_handwired.dtsi          — shared matrix-transform + kscan
   corne_handwired_left.overlay  — left half: kscan cols + i2c0 + SSD1306
