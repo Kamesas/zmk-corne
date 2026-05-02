@@ -90,6 +90,31 @@ if requested.
 - Three canvases (top/middle/bottom) on a 32-wide × 128-tall logical canvas,
   each rotated 90° before being placed onto the 128×32 framebuffer.
 
+### Prompt to use in a fresh session
+
+Paste verbatim into a new Claude Code chat in this repo. The fresh session
+will load this `CLAUDE.md` automatically.
+
+```
+Goal: Vertical 32×128 status screen on the left half's SSD1306 OLED,
+showing AS logo (top), large layer digit (middle), peripheral connection
+icon (bottom).
+
+Constraints (read CLAUDE.md first — non-negotiable):
+- Don't use lv_disp_set_rotation; it hangs under LV_CONF_MINIMAL.
+- Use canvas-level rotation (lv_canvas + rotate helper) like nice_view.
+- Set LV_Z_MEM_POOL_SIZE=8192, ZMK_DISPLAY_WORK_QUEUE_DEDICATED, fonts
+  + LV_FONT_DEFAULT in Kconfig.defconfig from the start.
+- LVGL 9 API only (LV_DISP_ROTATION_*, not LV_DISP_ROT_*).
+
+Approach: port nice_view's pattern wholesale —
+zmk/app/boards/shields/nice_view/widgets/status.c — adapting canvas
+sizes for 128×32 instead of 160×68. ONE commit. No bisection.
+
+If you can't get this working in one or two commits, stop and say so —
+don't keep iterating with one-line guesses.
+```
+
 ## Display feature plan (deferred)
 
 **Phase 1 (shipped horizontal):**
