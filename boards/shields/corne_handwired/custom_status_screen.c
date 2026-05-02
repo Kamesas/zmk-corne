@@ -3,13 +3,13 @@
 
 #include <zmk/display.h>
 
+/* Step 5 debug: label + font-default fix, NO rotation.
+ * Step 4 (rotation + label + font default) still hung. If this boots and
+ * shows "AS" horizontally, rotation is also a hang trigger. If this hangs,
+ * the font-default Kconfig override didn't take effect. */
+
 lv_obj_t *zmk_display_status_screen(void) {
     lv_obj_t *screen = lv_obj_create(NULL);
-
-    /* Rotate framebuffer 90° → logical canvas becomes 32 wide × 128 tall.
-     * If display reads upside down once flashed, change LV_DISP_ROTATION_90
-     * to LV_DISP_ROTATION_270 here. */
-    lv_disp_set_rotation(NULL, LV_DISP_ROTATION_90);
 
     lv_obj_t *logo = lv_label_create(screen);
     lv_label_set_text(logo, "AS");
