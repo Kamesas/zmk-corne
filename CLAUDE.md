@@ -126,27 +126,35 @@ Bisection log — what we tried and what each step revealed:
 | 2 | `8da7082` | Custom screen: label only, no rotation | Hangs |
 | 3 | `b84aad3` | Custom screen: bare `lv_obj_create`, no children | Boots, blank powered display |
 | 4 | `1f48fd2` | Rotation + label + `LV_FONT_DEFAULT_MONTSERRAT_14` choice set | Hangs |
-| 5 | `3f5432d` | Label + font default, no rotation | (awaiting flash result) |
+| 5 | `3f5432d` | Label + font default, no rotation | **Hangs** |
 
-**Hypothesis at Step 5:** `lv_disp_set_rotation()` is the hang trigger,
-not labels/fonts. Initial assumption that Step 2 hung "because of NULL font"
-was wrong — the font default choice was already implicitly selected by
-`LV_FONT_MONTSERRAT_14=y` being the only enabled font. The actual culprit
-is rotation under `LV_CONF_MINIMAL`. Confirmed by web research: upstream
-nice_view explicitly avoids `lv_disp_set_rotation` and rotates per-canvas
-instead.
+**Both hypotheses (font default, rotation) are wrong.** Step 5 hung even
+without rotation, with label + font default both set. Step 3 (bare screen,
+no children) booted. So the *minimal* difference between boot and hang is
+**adding a single label**.
 
-**Verification:** if Step 5 boots and shows "AS" horizontally, hypothesis
-confirmed.
+Likely remaining causes (from web research and ZMK upstream comparison):
+- **LVGL memory pool too small.** nice_view sets `LV_Z_MEM_CUSTOM_SIZE_KILOBYTES`
+  (or similar) to ~8192 bytes for custom screens. We haven't set anything.
+  When `lv_label_create` allocates internally, an undersized pool likely
+  panics inside `lv_mem_alloc` and wedges the system.
+- **Missing transitive LVGL features.** `LV_USE_LABEL=y` may need
+  `LV_USE_OBJ_PROPERTY`, font cache, etc. that `LV_CONF_MINIMAL` strips out.
+- **Status screen work-queue stack too small.** ZMK's display work queue has
+  a default stack size; LVGL operations under `LV_CONF_MINIMAL` may overflow it.
+
+Next action: research what nice_view sets beyond what we've copied, especially
+memory and stack sizing.
 
 ## Current state
 
-- Branch: `corne-dactyl`, last commit `3f5432d`.
+- Branch: `corne-dactyl`, last commit `3f5432d` (Step 5 — confirmed hung).
 - Hardware: left half rewired with display (SDA→P1.13, SCL→P1.11). Right half
   has display removed.
 - Right thumb on left half (DEL) had a cold solder joint — user confirmed and
   fixed.
-- Awaiting user to flash `3f5432d` and confirm: "AS" renders horizontally.
+- Adding any label hangs the central. Bare screen boots. Need to find what
+  LVGL config nice_view has that we don't.
 
 ## Next steps (depending on Step 5 result)
 
