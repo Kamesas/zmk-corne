@@ -57,6 +57,16 @@ the new firmware on each. Power-cycle to re-pair.
    endchoice
    ```
 
+   **Also bump the LVGL memory pool** — default 4096 is too small for
+   custom screens with labels and silently hangs the central:
+   ```
+   config LV_Z_MEM_POOL_SIZE
+       default 8192 if ZMK_DISPLAY_STATUS_SCREEN_CUSTOM
+   choice ZMK_DISPLAY_WORK_QUEUE
+       default ZMK_DISPLAY_WORK_QUEUE_DEDICATED
+   endchoice
+   ```
+
 4. **`lv_disp_set_rotation()` HANGS the central under `LV_CONF_MINIMAL`.**
    This is the actual root cause of the central-boot freeze, not the font
    default. Upstream nice_view confirms the pattern: it does **not** call
@@ -126,35 +136,32 @@ Bisection log — what we tried and what each step revealed:
 | 2 | `8da7082` | Custom screen: label only, no rotation | Hangs |
 | 3 | `b84aad3` | Custom screen: bare `lv_obj_create`, no children | Boots, blank powered display |
 | 4 | `1f48fd2` | Rotation + label + `LV_FONT_DEFAULT_MONTSERRAT_14` choice set | Hangs |
-| 5 | `3f5432d` | Label + font default, no rotation | **Hangs** |
+| 5 | `3f5432d` | Label + font default, no rotation | Hangs |
+| 6 | `417053b` | Label only, no rotation, **`LV_Z_MEM_POOL_SIZE=8192`** + dedicated work queue | **Boots**, blank/blue display |
 
-**Both hypotheses (font default, rotation) are wrong.** Step 5 hung even
-without rotation, with label + font default both set. Step 3 (bare screen,
-no children) booted. So the *minimal* difference between boot and hang is
-**adding a single label**.
+**Confirmed root cause:** default `LV_Z_MEM_POOL_SIZE` (4096) is too small.
+`lv_label_create` allocates internally and the failure path under
+`LV_CONF_MINIMAL` silently hangs the central before USB enumerates. Bumping
+to 8192 (matching upstream nice_view) unblocks boot.
 
-Likely remaining causes (from web research and ZMK upstream comparison):
-- **LVGL memory pool too small.** nice_view sets `LV_Z_MEM_CUSTOM_SIZE_KILOBYTES`
-  (or similar) to ~8192 bytes for custom screens. We haven't set anything.
-  When `lv_label_create` allocates internally, an undersized pool likely
-  panics inside `lv_mem_alloc` and wedges the system.
-- **Missing transitive LVGL features.** `LV_USE_LABEL=y` may need
-  `LV_USE_OBJ_PROPERTY`, font cache, etc. that `LV_CONF_MINIMAL` strips out.
-- **Status screen work-queue stack too small.** ZMK's display work queue has
-  a default stack size; LVGL operations under `LV_CONF_MINIMAL` may overflow it.
-
-Next action: research what nice_view sets beyond what we've copied, especially
-memory and stack sizing.
+**New issue (step 6):** display is on but "AS" doesn't render — only the
+panel's blue/cyan background shows. Likely cause: under `LV_COLOR_DEPTH_1`
+the default text color is the same as background, or the label's font/text
+color needs to be set explicitly. Possible fixes:
+- `lv_obj_set_style_text_color(label, lv_color_white(), 0)`
+- Or set the screen background to black so the white-on-default works
+- Check what nice_view does with text color in its widgets.
 
 ## Current state
 
-- Branch: `corne-dactyl`, last commit `3f5432d` (Step 5 — confirmed hung).
+- Branch: `corne-dactyl`, last commit `417053b` (Step 6 — boots, blank display).
 - Hardware: left half rewired with display (SDA→P1.13, SCL→P1.11). Right half
   has display removed.
 - Right thumb on left half (DEL) had a cold solder joint — user confirmed and
   fixed.
-- Adding any label hangs the central. Bare screen boots. Need to find what
-  LVGL config nice_view has that we don't.
+- Boot hang is solved. New problem: label exists in the source but doesn't
+  render — display shows only the panel's blue background. Need to set
+  text color / background style for monochrome.
 
 ## Next steps (depending on Step 5 result)
 
