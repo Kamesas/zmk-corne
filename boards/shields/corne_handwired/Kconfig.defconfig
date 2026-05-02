@@ -15,7 +15,7 @@ config ZMK_SPLIT
 
 endif
 
-if SHIELD_CORNE_HANDWIRED_RIGHT
+if SHIELD_CORNE_HANDWIRED_LEFT
 
 config ZMK_DISPLAY
     default y
