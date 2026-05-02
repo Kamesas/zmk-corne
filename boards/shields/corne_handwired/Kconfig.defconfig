@@ -20,21 +20,24 @@ if SHIELD_CORNE_HANDWIRED_LEFT
 config ZMK_DISPLAY
     default y
 
-# Built-in status screen — proven working on this hardware. Vertical
-# rotation via lv_disp_set_rotation hangs under LV_CONF_MINIMAL, and the
-# proper alternative (canvas-level rotation like nice_view) is a larger
-# port. Shipping horizontal for now; revisit vertical as a follow-up if
-# the user wants it.
+# Vertical 32x128 status screen — three 32x32 canvases (AS / layer / icon)
+# drawn upright then rotated 270° onto the 128x32 framebuffer, ported from
+# the nice_view canvas pattern. lv_disp_set_rotation hangs under
+# LV_CONF_MINIMAL, hence canvas-level rotation.
 choice ZMK_DISPLAY_STATUS_SCREEN
-    default ZMK_DISPLAY_STATUS_SCREEN_BUILT_IN
+    default ZMK_DISPLAY_STATUS_SCREEN_CUSTOM
 endchoice
 
+# Dedicated work queue is required: the default (system work queue) starves
+# under canvas-heavy redraws.
 choice ZMK_DISPLAY_WORK_QUEUE
     default ZMK_DISPLAY_WORK_QUEUE_DEDICATED
 endchoice
 
+# 4096 (LVGL default under MINIMAL) silently hangs on lv_canvas_create.
+# nice_view bumps to 8192 for the same reason.
 config LV_Z_MEM_POOL_SIZE
-    default 5120
+    default 8192
 
 endif
 
@@ -63,12 +66,21 @@ choice LV_COLOR_DEPTH
     default LV_COLOR_DEPTH_1
 endchoice
 
-# ZMK_DISPLAY implies LV_CONF_MINIMAL which strips labels and fonts.
-# The upstream built-in status screen renders text/icons, so re-enable.
+# ZMK_DISPLAY implies LV_CONF_MINIMAL, which strips labels, canvas, and
+# fonts. Re-enable the bits the custom status widget needs.
 config LV_USE_LABEL
     default y
 
+config LV_USE_CANVAS
+    default y
+
 config LV_FONT_MONTSERRAT_14
+    default y
+
+config LV_FONT_MONTSERRAT_22
+    default y
+
+config LV_FONT_MONTSERRAT_28
     default y
 
 choice LV_FONT_DEFAULT
