@@ -45,9 +45,8 @@ the new firmware on each. Power-cycle to re-pair.
    `config/<shield>.conf` and `prj.conf`.
 
 3. **`ZMK_DISPLAY` implies `LV_CONF_MINIMAL`.**
-   That defaults `LV_USE_LABEL=n`, Montserrat fonts to `n`, **and leaves the
-   `LV_FONT_DEFAULT` choice unset**. Custom status screens that use labels
-   must re-enable all three in `Kconfig.defconfig`:
+   That defaults `LV_USE_LABEL=n` and Montserrat fonts to `n`. Re-enable
+   what the screen needs in `Kconfig.defconfig`:
    ```
    config LV_USE_LABEL
        default y
@@ -57,12 +56,17 @@ the new firmware on each. Power-cycle to re-pair.
        default LV_FONT_DEFAULT_MONTSERRAT_14
    endchoice
    ```
-   **Skipping `LV_FONT_DEFAULT` was the root cause of the long central-boot
-   hang** — `lv_label_create()` dereferences the default font pointer at
-   runtime; if it's NULL the central freezes before USB CDC enumerates and
-   `dmesg` shows `error -110`.
 
-4. **ZMK custom widgets need ZMK's private headers.**
+4. **`lv_disp_set_rotation()` HANGS the central under `LV_CONF_MINIMAL`.**
+   This is the actual root cause of the central-boot freeze, not the font
+   default. Upstream nice_view confirms the pattern: it does **not** call
+   `lv_disp_set_rotation` — it uses canvas-level rotation via a custom
+   `rotate_canvas()` helper (see
+   `zmk/app/boards/shields/nice_view/widgets/status.c`). In `LV_CONF_MINIMAL`
+   the LVGL software-rotation path is not wired up, so `lv_disp_set_rotation`
+   wedges the next render and USB CDC never enumerates (`dmesg: error -110`).
+
+5. **ZMK custom widgets need ZMK's private headers.**
    `CMakeLists.txt` adds `${ZEPHYR_BASE}/../zmk/app/include` to the include path so
    widgets can `#include <zmk/display.h>` etc.
 
@@ -76,7 +80,9 @@ the left/central. Same pin numbers (P1.13/P1.11) — the user rewired physically
 ## Display software stack
 
 - **Driver:** `solomon,ssd1306fb` (Zephyr's SSD1306 framebuffer driver)
-- **GUI:** LVGL 9 (rotation API is `LV_DISP_ROTATION_90`, *not* the older `LV_DISP_ROT_90`)
+- **GUI:** LVGL 9. **Do not use `lv_disp_set_rotation()` under `LV_CONF_MINIMAL`** — it
+  hangs the central. For rotation, use canvas-level rotation like nice_view
+  (or skip rotation and use horizontal layout).
 - **Status screen choice:** `ZMK_DISPLAY_STATUS_SCREEN_CUSTOM`, implementing
   `zmk_display_status_screen()` in `boards/shields/corne_handwired/custom_status_screen.c`
 - **LVGL config (in `Kconfig.defconfig` under `if LVGL`):**
@@ -84,7 +90,17 @@ the left/central. Same pin numbers (P1.13/P1.11) — the user rewired physically
   - `LV_DPI_DEF = 148`
   - `LV_Z_BITS_PER_PIXEL = 1`
   - `LV_COLOR_DEPTH_1`
-  - `LV_USE_LABEL = y`, `LV_FONT_MONTSERRAT_14 = y`
+  - `LV_USE_LABEL = y`, `LV_FONT_MONTSERRAT_14 = y`,
+    `LV_FONT_DEFAULT = LV_FONT_DEFAULT_MONTSERRAT_14`
+
+## Reference implementations
+
+- **nice_view** (`zmk/app/boards/shields/nice_view/`) — canonical ZMK
+  custom-screen vertical OLED. Uses canvas-level rotation, not
+  `lv_disp_set_rotation`. Read its `widgets/status.c` and `Kconfig.defconfig`
+  before any further display work.
+- **zmk-nice-oled** (mctechnology17) — alternative reference for vertical
+  OLED widgets, modular layout.
 
 ## Display feature plan
 
@@ -107,33 +123,53 @@ Bisection log — what we tried and what each step revealed:
 |------|--------|---------------|--------|
 | 0 | `660074b` | Built-in status screen | Boots, icons render |
 | 1 | `ee78f77` | Custom screen: rotation + "AS" label, no widget | Hangs (tiny squares, USB -110) |
-| 2 | `8da7082` | Custom screen: label only, no rotation | Hangs (rules out rotation) |
+| 2 | `8da7082` | Custom screen: label only, no rotation | Hangs |
 | 3 | `b84aad3` | Custom screen: bare `lv_obj_create`, no children | Boots, blank powered display |
-| 4 | `1f48fd2` | Restore rotation + label, **add `LV_FONT_DEFAULT_MONTSERRAT_14`** | (awaiting flash result) |
+| 4 | `1f48fd2` | Rotation + label + `LV_FONT_DEFAULT_MONTSERRAT_14` choice set | Hangs |
+| 5 | `3f5432d` | Label + font default, no rotation | (awaiting flash result) |
 
-**Root cause:** `LV_FONT_DEFAULT` choice was unset under `LV_CONF_MINIMAL`, so
-`lv_label_create()` got a NULL default font and crashed before the USB stack
-came up. Enabling individual fonts (`LV_FONT_MONTSERRAT_14`) is *not enough* —
-the choice must also be selected.
+**Hypothesis at Step 5:** `lv_disp_set_rotation()` is the hang trigger,
+not labels/fonts. Initial assumption that Step 2 hung "because of NULL font"
+was wrong — the font default choice was already implicitly selected by
+`LV_FONT_MONTSERRAT_14=y` being the only enabled font. The actual culprit
+is rotation under `LV_CONF_MINIMAL`. Confirmed by web research: upstream
+nice_view explicitly avoids `lv_disp_set_rotation` and rotates per-canvas
+instead.
+
+**Verification:** if Step 5 boots and shows "AS" horizontally, hypothesis
+confirmed.
 
 ## Current state
 
-- Branch: `corne-dactyl`, last commit `1f48fd2`.
+- Branch: `corne-dactyl`, last commit `3f5432d`.
 - Hardware: left half rewired with display (SDA→P1.13, SCL→P1.11). Right half
   has display removed.
 - Right thumb on left half (DEL) had a cold solder joint — user confirmed and
   fixed.
-- Awaiting user to flash `1f48fd2` and confirm: vertical rotation works and
-  "AS" renders. If yes, next step is to reintroduce the layer widget
-  (`widgets/layer_status.{c,h}` are already on disk but not in CMakeLists).
+- Awaiting user to flash `3f5432d` and confirm: "AS" renders horizontally.
 
-## Next steps (in order)
+## Next steps (depending on Step 5 result)
 
-1. Confirm `1f48fd2` boots with vertical "AS" label.
-2. Reintroduce layer widget: re-add `widgets/layer_status.c` to
-   `CMakeLists.txt` sources, restore widget init in `custom_status_screen.c`.
-3. Add peripheral connection icon (was on the original Phase 1 design).
-4. Phase 2 widgets: caps, modifiers, WPM, battery.
+If Step 5 boots horizontally (rotation confirmed as culprit), choose one:
+
+**Path A — horizontal layout, simpler.** Drop rotation entirely. Lay
+"AS" / layer number / peripheral icon left-to-right across 128×32. Less
+ambitious than vertical, but proven to work and quick to implement.
+
+**Path B — replicate nice_view's canvas rotation.** Use `lv_canvas`
+instead of regular widgets, port a `rotate_canvas()` helper. Gives true
+vertical 32×128 layout but more code. Reference:
+`zmk/app/boards/shields/nice_view/widgets/status.c`.
+
+After picking a path:
+1. Reintroduce layer widget. (`widgets/layer_status.{c,h}` already on disk;
+   add back to `CMakeLists.txt`.)
+2. Add peripheral connection icon (Phase 1 wrap-up).
+3. Phase 2 widgets: caps, modifiers, WPM, battery.
+
+If Step 5 still hangs, the hypothesis is wrong and we need to look at
+LVGL memory pool sizing (nice_view uses 8192 bytes for custom screens; we
+haven't set anything explicitly).
 
 ## File layout
 
