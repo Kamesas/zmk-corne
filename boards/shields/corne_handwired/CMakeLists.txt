@@ -1,4 +1,8 @@
 if(CONFIG_ZMK_DISPLAY AND CONFIG_ZMK_DISPLAY_STATUS_SCREEN_CUSTOM)
+  # Shield sources compile under the zephyr target, not the app target, so
+  # they don't see zmk/app/include by default. Pull it in for <zmk/...>.
+  zephyr_library_include_directories(${CMAKE_SOURCE_DIR}/include)
+
   zephyr_library_sources(custom_status_screen.c)
   zephyr_library_sources(widgets/util.c)
 
