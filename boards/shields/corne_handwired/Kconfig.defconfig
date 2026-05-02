@@ -20,20 +20,21 @@ if SHIELD_CORNE_HANDWIRED_LEFT
 config ZMK_DISPLAY
     default y
 
+# Built-in status screen — proven working on this hardware. Vertical
+# rotation via lv_disp_set_rotation hangs under LV_CONF_MINIMAL, and the
+# proper alternative (canvas-level rotation like nice_view) is a larger
+# port. Shipping horizontal for now; revisit vertical as a follow-up if
+# the user wants it.
 choice ZMK_DISPLAY_STATUS_SCREEN
-    default ZMK_DISPLAY_STATUS_SCREEN_CUSTOM
+    default ZMK_DISPLAY_STATUS_SCREEN_BUILT_IN
 endchoice
 
-# Mirror what upstream nice_view does for custom screens. Default
-# LV_Z_MEM_POOL_SIZE (4096) is too small — lv_label_create allocates
-# internally and silently hangs the central under LV_CONF_MINIMAL.
 choice ZMK_DISPLAY_WORK_QUEUE
     default ZMK_DISPLAY_WORK_QUEUE_DEDICATED
 endchoice
 
 config LV_Z_MEM_POOL_SIZE
-    default 8192 if ZMK_DISPLAY_STATUS_SCREEN_CUSTOM
-    default 5120 if ZMK_DISPLAY_STATUS_SCREEN_BUILT_IN
+    default 5120
 
 endif
 
@@ -60,20 +61,6 @@ config LV_Z_BITS_PER_PIXEL
 
 choice LV_COLOR_DEPTH
     default LV_COLOR_DEPTH_1
-endchoice
-
-# ZMK_DISPLAY does `imply LV_CONF_MINIMAL`, which turns off label widgets and
-# fonts by default. Re-enable what the custom status screen needs.
-config LV_USE_LABEL
-    default y
-
-config LV_FONT_MONTSERRAT_14
-    default y
-
-# Without an explicit default font, lv_label_create() dereferences a NULL
-# font pointer at runtime and hangs the central before USB enumerates.
-choice LV_FONT_DEFAULT
-    default LV_FONT_DEFAULT_MONTSERRAT_14
 endchoice
 
 endif # LVGL
