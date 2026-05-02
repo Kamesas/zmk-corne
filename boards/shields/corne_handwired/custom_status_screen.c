@@ -3,17 +3,12 @@
 
 #include <zmk/display.h>
 
-/* Step 2 debug build: same as step 1 but WITHOUT lv_disp_set_rotation().
- * Step 1 (rotation + label) hung the central, so the rotation call is the
- * suspect. If this build boots and shows "AS" horizontally, rotation is the
- * bug — we'll move rotation to the SSD1306 driver level instead. */
+/* Step 3 debug build: bare screen, no label at all.
+ * Step 2 (label only, no rotation) still hung. If this boots and shows a
+ * blank display, the label/font path is the bug. If this still hangs, the
+ * problem is in our status-screen integration itself (Kconfig, linkage). */
 
 lv_obj_t *zmk_display_status_screen(void) {
     lv_obj_t *screen = lv_obj_create(NULL);
-
-    lv_obj_t *logo = lv_label_create(screen);
-    lv_label_set_text(logo, "AS");
-    lv_obj_align(logo, LV_ALIGN_TOP_MID, 0, 4);
-
     return screen;
 }
