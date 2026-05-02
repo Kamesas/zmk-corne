@@ -59,4 +59,10 @@ config LV_USE_LABEL
 config LV_FONT_MONTSERRAT_14
     default y
 
+# Without an explicit default font, lv_label_create() dereferences a NULL
+# font pointer at runtime and hangs the central before USB enumerates.
+choice LV_FONT_DEFAULT
+    default LV_FONT_DEFAULT_MONTSERRAT_14
+endchoice
+
 endif # LVGL
