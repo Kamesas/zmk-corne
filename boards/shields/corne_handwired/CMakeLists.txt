@@ -1,4 +1,4 @@
-if(CONFIG_SHIELD_CORNE_HANDWIRED_LEFT)
+if(CONFIG_ZMK_DISPLAY_STATUS_SCREEN_CUSTOM)
     zephyr_library()
     zephyr_library_include_directories(${CMAKE_CURRENT_SOURCE_DIR})
     # ZMK's app/include is private to the `app` library — pull it in
