@@ -63,4 +63,16 @@ choice LV_COLOR_DEPTH
     default LV_COLOR_DEPTH_1
 endchoice
 
+# ZMK_DISPLAY implies LV_CONF_MINIMAL which strips labels and fonts.
+# The upstream built-in status screen renders text/icons, so re-enable.
+config LV_USE_LABEL
+    default y
+
+config LV_FONT_MONTSERRAT_14
+    default y
+
+choice LV_FONT_DEFAULT
+    default LV_FONT_DEFAULT_MONTSERRAT_14
+endchoice
+
 endif # LVGL
