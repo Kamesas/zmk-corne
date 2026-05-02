@@ -20,11 +20,8 @@ if SHIELD_CORNE_HANDWIRED_LEFT
 config ZMK_DISPLAY
     default y
 
-# Debug: use built-in status screen instead of custom to isolate where the
-# central-side hang comes from. Switch back to ZMK_DISPLAY_STATUS_SCREEN_CUSTOM
-# once boot is confirmed.
 choice ZMK_DISPLAY_STATUS_SCREEN
-    default ZMK_DISPLAY_STATUS_SCREEN_BUILT_IN
+    default ZMK_DISPLAY_STATUS_SCREEN_CUSTOM
 endchoice
 
 endif
