@@ -45,14 +45,22 @@ the new firmware on each. Power-cycle to re-pair.
    `config/<shield>.conf` and `prj.conf`.
 
 3. **`ZMK_DISPLAY` implies `LV_CONF_MINIMAL`.**
-   That defaults `LV_USE_LABEL=n` and Montserrat fonts to `n`. Custom status
-   screens that use labels must re-enable them in `Kconfig.defconfig`:
+   That defaults `LV_USE_LABEL=n`, Montserrat fonts to `n`, **and leaves the
+   `LV_FONT_DEFAULT` choice unset**. Custom status screens that use labels
+   must re-enable all three in `Kconfig.defconfig`:
    ```
    config LV_USE_LABEL
        default y
    config LV_FONT_MONTSERRAT_14
        default y
+   choice LV_FONT_DEFAULT
+       default LV_FONT_DEFAULT_MONTSERRAT_14
+   endchoice
    ```
+   **Skipping `LV_FONT_DEFAULT` was the root cause of the long central-boot
+   hang** — `lv_label_create()` dereferences the default font pointer at
+   runtime; if it's NULL the central freezes before USB CDC enumerates and
+   `dmesg` shows `error -110`.
 
 4. **ZMK custom widgets need ZMK's private headers.**
    `CMakeLists.txt` adds `${ZEPHYR_BASE}/../zmk/app/include` to the include path so
@@ -91,16 +99,41 @@ the left/central. Same pin numbers (P1.13/P1.11) — the user rewired physically
 - WPM counter
 - Battery widget (left half)
 
-## Open issues / current state
+## Debug history (custom-status-screen central-boot hang)
 
-- **Custom status screen hangs the central on boot.**
-  Built-in status screen boots fine, custom screen causes USB to fail with
-  `error -110` and tiny squares on the OLED. Currently bisecting:
-  - Step 0 (verified): built-in status screen — boots, icons render.
-  - Step 1 (pushed in `ee78f77`): custom screen with **only rotation + "AS" label**,
-    no layer widget. Next step depends on result.
-  - If Step 1 boots → widget is the culprit. Reintroduce layer widget piece by piece.
-  - If Step 1 hangs vertical → the rotation call. Try driver-level rotation instead.
+Bisection log — what we tried and what each step revealed:
+
+| Step | Commit | Build content | Result |
+|------|--------|---------------|--------|
+| 0 | `660074b` | Built-in status screen | Boots, icons render |
+| 1 | `ee78f77` | Custom screen: rotation + "AS" label, no widget | Hangs (tiny squares, USB -110) |
+| 2 | `8da7082` | Custom screen: label only, no rotation | Hangs (rules out rotation) |
+| 3 | `b84aad3` | Custom screen: bare `lv_obj_create`, no children | Boots, blank powered display |
+| 4 | `1f48fd2` | Restore rotation + label, **add `LV_FONT_DEFAULT_MONTSERRAT_14`** | (awaiting flash result) |
+
+**Root cause:** `LV_FONT_DEFAULT` choice was unset under `LV_CONF_MINIMAL`, so
+`lv_label_create()` got a NULL default font and crashed before the USB stack
+came up. Enabling individual fonts (`LV_FONT_MONTSERRAT_14`) is *not enough* —
+the choice must also be selected.
+
+## Current state
+
+- Branch: `corne-dactyl`, last commit `1f48fd2`.
+- Hardware: left half rewired with display (SDA→P1.13, SCL→P1.11). Right half
+  has display removed.
+- Right thumb on left half (DEL) had a cold solder joint — user confirmed and
+  fixed.
+- Awaiting user to flash `1f48fd2` and confirm: vertical rotation works and
+  "AS" renders. If yes, next step is to reintroduce the layer widget
+  (`widgets/layer_status.{c,h}` are already on disk but not in CMakeLists).
+
+## Next steps (in order)
+
+1. Confirm `1f48fd2` boots with vertical "AS" label.
+2. Reintroduce layer widget: re-add `widgets/layer_status.c` to
+   `CMakeLists.txt` sources, restore widget init in `custom_status_screen.c`.
+3. Add peripheral connection icon (was on the original Phase 1 design).
+4. Phase 2 widgets: caps, modifiers, WPM, battery.
 
 ## File layout
 
