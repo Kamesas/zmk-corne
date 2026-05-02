@@ -27,6 +27,7 @@ struct status_state {
     bool active_profile_bonded;
     uint8_t layer_index;
     const char *layer_label;
+    bool caps_lock;
 };
 
 void rotate_canvas(lv_obj_t *canvas);

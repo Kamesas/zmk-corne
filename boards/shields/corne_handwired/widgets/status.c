@@ -23,12 +23,17 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 #include <zmk/events/ble_active_profile_changed.h>
 #include <zmk/events/endpoint_changed.h>
 #include <zmk/events/layer_state_changed.h>
+#include <zmk/events/hid_indicators_changed.h>
+#include <zmk/hid_indicators.h>
 #include <zmk/usb.h>
 #include <zmk/ble.h>
 #include <zmk/endpoints.h>
 #include <zmk/keymap.h>
 
 #include "status.h"
+
+// Standard HID Keyboard LED report bit for Caps Lock.
+#define HID_LED_CAPS_LOCK_BIT 0x02
 
 static sys_slist_t widgets = SYS_SLIST_STATIC_INIT(&widgets);
 
@@ -42,6 +47,10 @@ struct output_status_state {
 struct layer_status_state {
     zmk_keymap_layer_index_t index;
     const char *label;
+};
+
+struct hid_indicators_state {
+    bool caps_lock;
 };
 
 static void draw_top(lv_obj_t *widget, const struct status_state *state) {
@@ -76,6 +85,8 @@ static void draw_bottom(lv_obj_t *widget, const struct status_state *state) {
 
     lv_draw_label_dsc_t label_dsc;
     init_label_dsc(&label_dsc, LVGL_FOREGROUND, &lv_font_montserrat_14, LV_TEXT_ALIGN_CENTER);
+    lv_draw_rect_dsc_t rect_white_dsc;
+    init_rect_dsc(&rect_white_dsc, LVGL_FOREGROUND);
 
     lv_canvas_fill_bg(canvas, LVGL_BACKGROUND, LV_OPA_COVER);
 
@@ -96,7 +107,14 @@ static void draw_bottom(lv_obj_t *widget, const struct status_state *state) {
         break;
     }
 
-    canvas_draw_text(canvas, 0, 8, CANVAS_SIZE, &label_dsc, icon);
+    canvas_draw_text(canvas, 0, 4, CANVAS_SIZE, &label_dsc, icon);
+
+    // Caps-lock indicator: solid bar at the bottom of the canvas (which lands
+    // on one edge of the icon section after canvas rotation). Only painted
+    // when the host has the Caps Lock LED on.
+    if (state->caps_lock) {
+        canvas_draw_rect(canvas, 0, 26, CANVAS_SIZE, 4, &rect_white_dsc);
+    }
 
     rotate_canvas(canvas);
 }
@@ -157,6 +175,28 @@ ZMK_DISPLAY_WIDGET_LISTENER(widget_layer_status, struct layer_status_state, laye
                             layer_status_get_state)
 ZMK_SUBSCRIPTION(widget_layer_status, zmk_layer_state_changed);
 
+static void set_hid_indicators(struct zmk_widget_status *widget,
+                               struct hid_indicators_state state) {
+    widget->state.caps_lock = state.caps_lock;
+
+    draw_bottom(widget->obj, &widget->state);
+}
+
+static void hid_indicators_update_cb(struct hid_indicators_state state) {
+    struct zmk_widget_status *widget;
+    SYS_SLIST_FOR_EACH_CONTAINER(&widgets, widget, node) { set_hid_indicators(widget, state); }
+}
+
+static struct hid_indicators_state hid_indicators_get_state(const zmk_event_t *_eh) {
+    return (struct hid_indicators_state){
+        .caps_lock = (zmk_hid_indicators_get_current_profile() & HID_LED_CAPS_LOCK_BIT) != 0,
+    };
+}
+
+ZMK_DISPLAY_WIDGET_LISTENER(widget_hid_indicators, struct hid_indicators_state,
+                            hid_indicators_update_cb, hid_indicators_get_state)
+ZMK_SUBSCRIPTION(widget_hid_indicators, zmk_hid_indicators_changed);
+
 int zmk_widget_status_init(struct zmk_widget_status *widget, lv_obj_t *parent) {
     widget->obj = lv_obj_create(parent);
     lv_obj_set_size(widget->obj, 128, 32);
@@ -178,6 +218,7 @@ int zmk_widget_status_init(struct zmk_widget_status *widget, lv_obj_t *parent) {
     sys_slist_append(&widgets, &widget->node);
     widget_output_status_init();
     widget_layer_status_init();
+    widget_hid_indicators_init();
 
     // "AS" is static; nothing else triggers its draw, so paint it once here.
     draw_top(widget->obj, &widget->state);
