@@ -28,6 +28,7 @@ struct status_state {
     uint8_t layer_index;
     const char *layer_label;
     bool caps_lock;
+    uint8_t mods;
 };
 
 void rotate_canvas(lv_obj_t *canvas);
