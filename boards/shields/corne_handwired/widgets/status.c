@@ -105,7 +105,7 @@ static void draw_bottom(lv_obj_t *widget, const struct status_state *state) {
     lv_obj_t *canvas = lv_obj_get_child(widget, 2);
 
     lv_draw_label_dsc_t label_dsc;
-    init_label_dsc(&label_dsc, LVGL_FOREGROUND, &lv_font_montserrat_14, LV_TEXT_ALIGN_CENTER);
+    init_label_dsc(&label_dsc, LVGL_FOREGROUND, &lv_font_montserrat_22, LV_TEXT_ALIGN_CENTER);
 
     lv_canvas_fill_bg(canvas, LVGL_BACKGROUND, LV_OPA_COVER);
 
@@ -116,7 +116,7 @@ static void draw_bottom(lv_obj_t *widget, const struct status_state *state) {
         break;
     case ZMK_TRANSPORT_BLE:
         if (state->active_profile_bonded) {
-            icon = state->active_profile_connected ? LV_SYMBOL_WIFI : LV_SYMBOL_CLOSE;
+            icon = state->active_profile_connected ? LV_SYMBOL_BLUETOOTH : LV_SYMBOL_CLOSE;
         } else {
             icon = LV_SYMBOL_SETTINGS;
         }
@@ -126,7 +126,7 @@ static void draw_bottom(lv_obj_t *widget, const struct status_state *state) {
         break;
     }
 
-    canvas_draw_text(canvas, 0, 4, CANVAS_SIZE, &label_dsc, icon);
+    canvas_draw_text(canvas, 0, 5, CANVAS_SIZE, &label_dsc, icon);
 
     rotate_canvas(canvas);
 }
