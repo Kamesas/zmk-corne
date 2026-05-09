@@ -20,6 +20,9 @@ if SHIELD_CORNE_HANDWIRED_LEFT
 config ZMK_DISPLAY
     default y
 
+config ZMK_HID_INDICATORS
+    default y
+
 # Vertical 32x128 status screen — three 32x32 canvases (AS / layer / icon)
 # drawn upright then rotated 270° onto the 128x32 framebuffer, ported from
 # the nice_view canvas pattern. lv_disp_set_rotation hangs under
