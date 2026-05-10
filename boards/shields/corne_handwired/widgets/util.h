@@ -17,8 +17,12 @@
     LV_CANVAS_BUF_SIZE(CANVAS_SIZE, CANVAS_SIZE, LV_COLOR_FORMAT_GET_BPP(CANVAS_COLOR_FORMAT),     \
                        LV_DRAW_BUF_STRIDE_ALIGN)
 
-#define LVGL_FOREGROUND lv_color_white()
-#define LVGL_BACKGROUND lv_color_black()
+// lv_draw_sw_rotate with LV_DISPLAY_ROTATION_90 inverts L8 pixel values (0↔255).
+// Swapping FG/BG compensates: black (L8=0) inverts to 255=bright; white (L8=255)
+// inverts to 0=dark. Do NOT use for widget container styling — that path bypasses
+// the canvas pipeline and renders 1bpp directly without inversion.
+#define LVGL_FOREGROUND lv_color_black()
+#define LVGL_BACKGROUND lv_color_white()
 
 struct status_state {
     struct zmk_endpoint_instance selected_endpoint;
@@ -28,7 +32,6 @@ struct status_state {
     uint8_t layer_index;
     const char *layer_label;
     bool caps_lock;
-    uint8_t mods;
 };
 
 void rotate_canvas(lv_obj_t *canvas);

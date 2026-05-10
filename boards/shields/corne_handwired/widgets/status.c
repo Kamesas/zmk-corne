@@ -24,9 +24,7 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 #include <zmk/events/endpoint_changed.h>
 #include <zmk/events/layer_state_changed.h>
 #include <zmk/events/hid_indicators_changed.h>
-#include <zmk/events/keycode_state_changed.h>
 #include <zmk/hid_indicators.h>
-#include <zmk/hid.h>
 #include <zmk/usb.h>
 #include <zmk/ble.h>
 #include <zmk/endpoints.h>
@@ -53,35 +51,18 @@ struct layer_status_state {
 
 struct hid_indicators_state {
     bool caps_lock;
-    uint8_t mods;
 };
 
 static void draw_top(lv_obj_t *widget, const struct status_state *state) {
     lv_obj_t *canvas = lv_obj_get_child(widget, 0);
 
-    lv_draw_label_dsc_t label_dsc;
-    init_label_dsc(&label_dsc, LVGL_FOREGROUND, &lv_font_montserrat_14, LV_TEXT_ALIGN_CENTER);
-
     lv_canvas_fill_bg(canvas, LVGL_BACKGROUND, LV_OPA_COVER);
 
-    // Top half: caps lock — inverted block when active, blank when not.
     if (state->caps_lock) {
-        lv_draw_rect_dsc_t rect_dsc;
-        init_rect_dsc(&rect_dsc, LVGL_FOREGROUND);
-        canvas_draw_rect(canvas, 0, 0, CANVAS_SIZE, 15, &rect_dsc);
-
-        lv_draw_label_dsc_t inv_label;
-        init_label_dsc(&inv_label, LVGL_BACKGROUND, &lv_font_montserrat_14, LV_TEXT_ALIGN_CENTER);
-        canvas_draw_text(canvas, 0, 1, CANVAS_SIZE, &inv_label, "CAP");
+        lv_draw_label_dsc_t label_dsc;
+        init_label_dsc(&label_dsc, LVGL_FOREGROUND, &lv_font_montserrat_22, LV_TEXT_ALIGN_CENTER);
+        canvas_draw_text(canvas, 0, 5, CANVAS_SIZE, &label_dsc, LV_SYMBOL_LOCK);
     }
-
-    // Bottom half: active modifier letters (S C A G).
-    char mod_str[5] = "    ";
-    if (state->mods & (BIT(1) | BIT(5))) mod_str[0] = 'S';
-    if (state->mods & (BIT(0) | BIT(4))) mod_str[1] = 'C';
-    if (state->mods & (BIT(2) | BIT(6))) mod_str[2] = 'A';
-    if (state->mods & (BIT(3) | BIT(7))) mod_str[3] = 'G';
-    canvas_draw_text(canvas, 0, 17, CANVAS_SIZE, &label_dsc, mod_str);
 
     rotate_canvas(canvas);
 }
@@ -190,7 +171,6 @@ ZMK_SUBSCRIPTION(widget_layer_status, zmk_layer_state_changed);
 static void set_hid_indicators(struct zmk_widget_status *widget,
                                struct hid_indicators_state state) {
     widget->state.caps_lock = state.caps_lock;
-    widget->state.mods = state.mods;
 
     draw_top(widget->obj, &widget->state);
 }
@@ -203,19 +183,17 @@ static void hid_indicators_update_cb(struct hid_indicators_state state) {
 static struct hid_indicators_state hid_indicators_get_state(const zmk_event_t *_eh) {
     return (struct hid_indicators_state){
         .caps_lock = (zmk_hid_indicators_get_current_profile() & HID_LED_CAPS_LOCK_BIT) != 0,
-        .mods = zmk_hid_get_explicit_mods(),
     };
 }
 
 ZMK_DISPLAY_WIDGET_LISTENER(widget_hid_indicators, struct hid_indicators_state,
                             hid_indicators_update_cb, hid_indicators_get_state)
 ZMK_SUBSCRIPTION(widget_hid_indicators, zmk_hid_indicators_changed);
-ZMK_SUBSCRIPTION(widget_hid_indicators, zmk_keycode_state_changed);
 
 int zmk_widget_status_init(struct zmk_widget_status *widget, lv_obj_t *parent) {
     widget->obj = lv_obj_create(parent);
     lv_obj_set_size(widget->obj, 128, 32);
-    lv_obj_set_style_bg_color(widget->obj, LVGL_BACKGROUND, LV_PART_MAIN);
+    lv_obj_set_style_bg_color(widget->obj, lv_color_black(), LV_PART_MAIN);
     lv_obj_set_style_bg_opa(widget->obj, LV_OPA_COVER, LV_PART_MAIN);
 
     lv_obj_t *top = lv_canvas_create(widget->obj);
