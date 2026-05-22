@@ -8,8 +8,10 @@ with **nice_nano v2** controllers on both halves. Branch in active development:
 
 - **MCUs:** nice_nano v2 (nRF52840) on both halves
 - **Matrix:** 4 rows × 6 cols per half, `col2row`
-  - Rows: P0.31, P0.29, P0.02, P1.15
+  - Rows: **P1.07**, P0.29, P0.02, P1.15
   - Cols: P0.17, P0.20, P0.22, P0.24, P1.00, P0.11
+  - **P0.31 is reserved for VBAT sense** — see Battery below. Row 0 was
+    originally on P0.31 and moved to P1.07 to free the ADC.
 - **OLED display:** 0.91" SSD1306, 128×32, I²C @ `0x3C`. 4-pin module with
   ~6.5 kΩ onboard pull-ups. Module's "SCK" label = SCL.
 - **Display location:** **left half (central).** Was originally on the right;
@@ -19,7 +21,16 @@ with **nice_nano v2** controllers on both halves. Branch in active development:
   - GND → GND
   - SDA → **P1.13**
   - SCK (SCL) → **P1.11**
+- **Battery:** LiPo on the right half wired to nice_nano v2 `B+`/`B-` pads.
+  nice_nano v2 has an onboard voltage divider between B+ and **P0.31**, gated
+  by a P-MOSFET on P0.13. The `vbatt` node lives in the upstream
+  `nice_nano_v2.dts`, so `CONFIG_ZMK_BATTERY_REPORTING=y` is enough to turn
+  it on once P0.31 is free. Left half has no battery yet.
 - **Encoder:** removed for now. Will be relocated to the right half later.
+  Original pin set was P1.07 (A) / P1.02 (B) / P1.01 (SW). P1.07 is now
+  used by row 0, so a returning encoder needs a new "A" pin. Candidates:
+  P1.04 or P1.06 (clean), P0.09 or P0.10 (requires
+  `CONFIG_NFCT_PINS_AS_GPIOS=y`). B and SW can still use P1.02 / P1.01.
 
 ## Build / flash
 
@@ -33,13 +44,15 @@ the new firmware on each. Power-cycle to re-pair.
 
 ## Current state (working)
 
-- Branch: `corne-dactyl`, status: **shipped vertical custom display**.
+- Branch: `corne-dactyl`, status: **vertical custom display + battery widget**.
 - Custom 32×128 vertical status screen on the left-half OLED, ported from
   the nice_view canvas pattern. Three 32×32 canvases drawn upright then
   rotated 270° onto the 128×32 framebuffer:
-  - left: "AS" monogram (Montserrat 22)
-  - center: large active-layer digit (Montserrat 28)
-  - right: endpoint/connection icon — USB / WIFI / CLOSE / SETTINGS
+  - **top:** endpoint icon + caps lock icon, both Montserrat 14, stacked.
+    Caps icon only shown when active.
+  - **middle:** large active-layer digit (Montserrat 28).
+  - **bottom:** `L XX` / `R XX` battery percentages (Montserrat 14).
+    `XX` becomes `--` when the cell isn't present / reads 0.
 - Keyboard fully functional; right thumb (DEL) cold-joint fixed by user.
 
 ## Critical build pitfalls (kept here so we don't relearn them)
@@ -96,21 +109,27 @@ Reference for any future widget work on this shield. Pattern lifted from
   4096 silently hangs the central.
 - Adding a Montserrat size requires both `LV_FONT_MONTSERRAT_NN=y` and the
   `LV_FONT_DEFAULT` choice already pointing at an enabled font.
+- Peripheral battery event (`zmk_peripheral_battery_state_changed`) and its
+  `as_*` helper only exist when one of the
+  `CONFIG_ZMK_SPLIT_BLE_CENTRAL_BATTERY_LEVEL_{FETCHING,PROXY}` configs is
+  enabled. Always guard the usage with `IS_ENABLED(...)` so the central
+  build doesn't fail to link when peripheral fetching is off.
 
 ## Display feature plan
 
-**Phase 1 (shipped):**
-- ✅ Endpoint / connection icon (USB / WIFI / CLOSE / SETTINGS)
+**Phase 1 + 2 (shipped):**
+- ✅ Endpoint / connection icon (USB / BLE / unbonded / disconnected)
 - ✅ Layer indication (large digit)
-- ✅ Custom vertical layout with AS monogram
+- ✅ Caps-lock indicator (now stacked with endpoint icon at top)
+- ✅ Battery percentage L / R (`zmk_battery_state_changed` + peripheral
+  fetching via `CONFIG_ZMK_SPLIT_BLE_CENTRAL_BATTERY_LEVEL_FETCHING`)
 
-**Phase 2 (next, additive on the same canvas pattern):**
-- Caps-lock indicator
+**Phase 3 (next, additive on the same canvas pattern):**
 - Modifier display (Shift/Ctrl/Alt/GUI)
 - WPM counter
-- Battery icons (when battery is added)
 - Peripheral-half connection icon (right-half link health, distinct from BLE
   endpoint icon — uses `zmk_split_bt_central_status_changed` on central)
+- Glyph-based battery icons (currently text only)
 
 ## File layout
 
