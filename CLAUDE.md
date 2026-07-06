@@ -8,10 +8,10 @@ with **nice_nano v2** controllers on both halves. Branch in active development:
 
 - **MCUs:** nice_nano v2 (nRF52840) on both halves
 - **Matrix:** 4 rows × 6 cols per half, `col2row`
-  - Rows: **P1.07**, P0.29, P0.02, P1.15
+  - Rows: P0.31, P0.29, P0.02, P1.15
   - Cols: P0.17, P0.20, P0.22, P0.24, P1.00, P0.11
-  - **P0.31 is reserved for VBAT sense** — see Battery below. Row 0 was
-    originally on P0.31 and moved to P1.07 to free the ADC.
+  - P0.31 is fine as a row pin: battery is measured through VDDH, not
+    through an ADC pin — see Battery below.
 - **OLED display:** 0.91" SSD1306, 128×32, I²C @ `0x3C`. 4-pin module with
   ~6.5 kΩ onboard pull-ups. Module's "SCK" label = SCL.
 - **Display location:** **left half (central).** Was originally on the right;
@@ -25,15 +25,14 @@ with **nice_nano v2** controllers on both halves. Branch in active development:
   The `nice_nano//zmk` board variant (rev 2.0.0) measures the cell through
   **VDDH** (`zmk,battery-nrf-vddh` in the upstream board overlay) — no ADC
   pin involved. The P0.31 voltage divider is the **v1** circuit; on v2,
-  P0.13 is the ext-power control. So freeing P0.31 was not required for
-  battery reporting — the row-0 move to P1.07 is harmless but P0.31 is
-  usable again if a pin is ever needed. `CONFIG_ZMK_BATTERY_REPORTING=y`
-  is enough. Left half has no battery yet.
+  P0.13 is the ext-power control. So row 0 can stay on P0.31 (an earlier
+  plan to move it to P1.07 was based on the v1 story and was reverted
+  before any rewiring). `CONFIG_ZMK_BATTERY_REPORTING=y` is enough.
+  Left half has no battery yet; when powered over USB with no cell, the
+  VDDH reading may show a fake percentage instead of `--`.
 - **Encoder:** removed for now. Will be relocated to the right half later.
-  Original pin set was P1.07 (A) / P1.02 (B) / P1.01 (SW). P1.07 is now
-  used by row 0, so a returning encoder needs a new "A" pin. Candidates:
-  P1.04 or P1.06 (clean), P0.09 or P0.10 (requires
-  `CONFIG_NFCT_PINS_AS_GPIOS=y`). B and SW can still use P1.02 / P1.01.
+  The original pin set P1.07 (A) / P1.02 (B) / P1.01 (SW) is fully
+  available again.
 
 ## Build / flash
 

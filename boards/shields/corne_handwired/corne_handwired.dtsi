@@ -1,15 +1,14 @@
 /*
  * Corne Handwired - Pin Configuration for nice_nano v2
  *
- * Rows: P1.07, P0.29, P0.02, P1.15
+ * Rows: P0.31, P0.29, P0.02, P1.15
  * Cols: P0.17, P0.20, P0.22, P0.24, P1.00, P0.11
  *
- * P0.31 is intentionally NOT used as a row pin — it is the VBAT sense input
- * for the nice_nano v2 onboard battery voltage divider. Row 0 was originally
- * on P0.31 but moved to P1.07 to free the ADC pin for battery reporting.
+ * Battery on the nice_nano//zmk v2 board is measured through VDDH
+ * (zmk,battery-nrf-vddh in the board variant), so P0.31 is free to use
+ * as row 0 — no ADC pin is needed for battery reporting.
  *
- * Encoder (future, left only): B=P1.02, SW=P1.01, A=TBD (P1.04 / P1.06 /
- * P0.09 / P0.10). P1.07 is no longer available for the encoder.
+ * Encoder (future, left only): A=P1.07, B=P1.02, SW=P1.01
  */
 
 #include <dt-bindings/zmk/matrix_transform.h>
@@ -41,7 +40,7 @@
         diode-direction = "col2row";
 
         row-gpios
-            = <&gpio1 7  (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
+            = <&gpio0 31 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
             , <&gpio0 29 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
             , <&gpio0 2  (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
             , <&gpio1 15 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
