@@ -6,6 +6,16 @@ config ZMK_KEYBOARD_NAME
 config ZMK_SPLIT_ROLE_CENTRAL
     default y
 
+# Central pulls peripheral battery levels over the split link so the OLED
+# widget can show the right half's cell; proxy re-publishes both cells to
+# the host's BAS. Central-only symbols, so they live here and not in the
+# shared config/corne_handwired.conf.
+config ZMK_SPLIT_BLE_CENTRAL_BATTERY_LEVEL_FETCHING
+    default y
+
+config ZMK_SPLIT_BLE_CENTRAL_BATTERY_LEVEL_PROXY
+    default y
+
 endif
 
 if SHIELD_CORNE_HANDWIRED_LEFT || SHIELD_CORNE_HANDWIRED_RIGHT

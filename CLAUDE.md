@@ -64,10 +64,12 @@ the new firmware on each. Power-cycle to re-pair.
    `zmk_event_zmk_layer_state_changed`. **Any layer-aware widget must run on
    central.** This is why the display moved from right to left.
 
-2. **Shield `.conf` does not merge reliably.**
-   Defaults belong in `boards/shields/corne_handwired/Kconfig.defconfig`, not in
-   `corne_handwired.conf`. The build's merge log only consistently picks up
-   `config/<shield>.conf` and `prj.conf`.
+2. **Shield-folder `.conf` with a base name is NEVER merged.**
+   A `.conf` inside `boards/shields/corne_handwired/` is only merged when named
+   with the FULL shield name (`corne_handwired_left.conf` / `_right.conf`).
+   The base-name sharing trick (`corne_handwired.conf` applies to both halves)
+   works only in `config/`. So: runtime settings for both halves go in
+   `config/corne_handwired.conf`; shield defaults go in `Kconfig.defconfig`.
 
 3. **`ZMK_DISPLAY` implies `LV_CONF_MINIMAL`.** Strips out most LVGL features.
    For the **built-in** status screen this is fine. For a **custom** screen
@@ -98,7 +100,8 @@ Reference for any future widget work on this shield. Pattern lifted from
   events), and adds `${CMAKE_SOURCE_DIR}/include` so shield sources can find
   `<zmk/...>` headers (they compile under the zephyr target, not app).
 - `Kconfig.defconfig` — `STATUS_SCREEN_CUSTOM`, mem pool 8192,
-  `WORK_QUEUE_DEDICATED`, `LV_USE_LABEL`, `LV_USE_CANVAS`, Montserrat 14/22/28.
+  `WORK_QUEUE_DEDICATED`, `LV_USE_LABEL`, `LV_USE_CANVAS`, Montserrat 14/28,
+  and the central-only split battery symbols (`_FETCHING` / `_PROXY`).
 
 ### Pitfalls already hit
 
@@ -142,11 +145,14 @@ boards/shields/corne_handwired/
   custom_status_screen.c        — strong override of zmk_display_status_screen
   widgets/status.{c,h}          — three-canvas vertical status widget (central)
   widgets/util.{c,h}            — rotate_canvas + lv_canvas helpers
-  corne_handwired.conf          — runtime config (sleep, BLE, USB logging)
   corne_handwired.dtsi          — shared matrix-transform + kscan
   corne_handwired_left.overlay  — left half: kscan cols + i2c0 + SSD1306
   corne_handwired_right.overlay — right half: kscan cols only (col-offset=6)
   corne_handwired.keymap        — 7 layers, combos, mod-taps
+config/
+  corne_handwired.conf          — runtime config for both halves (sleep, BLE,
+                                  USB logging, battery reporting)
+  west.yml                      — west manifest (zmk @ main)
 ```
 
 ## Working with the user

@@ -74,7 +74,7 @@
 
         layer3 {
             // -----------------------------------------------------------------------------------------
-            // |  TAB | BRIU | NONE | EXT_UP | MNXT | VOLU |   | WHLL | WHLD | WHLU | WHLR | APP  | BSPC |
+            // |  TAB | BRIU | LCLK | EXT_UP | MNXT | VOLU |   | WHLL | WHLD | WHLU | WHLR | APP  | BSPC |
             // | ESC/CTRL | GUI/TRNS | ALT/TRNS | EXT_DFL | SHFT/MPLY | MUTE |   | MLFT | MDWN | MUP  | MRGT | BTN3 |  '   |
             // | SHFT | BRID | NONE | EXT_DN | MPRV | VOLD |   | NONE | NONE | NONE | NONE | NONE | RET  |
             //                    | RCLK | LCLK | ADJ/GUI |   | ADJ/GUI | LCLK | RCLK |

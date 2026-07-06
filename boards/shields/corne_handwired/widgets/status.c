@@ -66,10 +66,6 @@ struct battery_status_state {
     uint8_t peripheral;
 };
 
-// Peripheral battery has no global query API — cache the last reported value
-// so the widget can re-render correctly when other listeners fire.
-static uint8_t last_peripheral_battery;
-
 static const char *endpoint_icon(const struct status_state *state) {
     switch (state->selected_endpoint.transport) {
     case ZMK_TRANSPORT_USB:
@@ -224,6 +220,10 @@ ZMK_SUBSCRIPTION(widget_hid_indicators, zmk_hid_indicators_changed);
 
 #if IS_ENABLED(CONFIG_ZMK_BATTERY_REPORTING)
 
+// Peripheral battery has no global query API — cache the last reported value
+// so the widget can re-render correctly when other listeners fire.
+static uint8_t last_peripheral_battery;
+
 static void set_battery_status(struct zmk_widget_status *widget, struct battery_status_state state) {
     widget->state.battery_central = state.central;
     widget->state.battery_peripheral = state.peripheral;
@@ -242,8 +242,9 @@ static struct battery_status_state battery_status_get_state(const zmk_event_t *e
     // always queries the live SOC.
 #if IS_ENABLED(CONFIG_ZMK_SPLIT_BLE_CENTRAL_BATTERY_LEVEL_FETCHING) ||                             \
     IS_ENABLED(CONFIG_ZMK_SPLIT_BLE_CENTRAL_BATTERY_LEVEL_PROXY)
+    // eh is NULL on the widget-init call; as_* would dereference it.
     const struct zmk_peripheral_battery_state_changed *pev =
-        as_zmk_peripheral_battery_state_changed(eh);
+        eh != NULL ? as_zmk_peripheral_battery_state_changed(eh) : NULL;
     if (pev != NULL) {
         last_peripheral_battery = pev->state_of_charge;
     }

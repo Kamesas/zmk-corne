@@ -213,4 +213,4 @@ This was caused by two issues on Ubuntu:
 
 **External Bluetooth adapter (TP-Link UB500):**
 
-The built-in Bluetooth 4.2 adapter on the HP laptop had issues pairing with the NRF52840. Using a TP-Link UB500 (Bluetooth 5.1) adapter resolved connection stability. The keyboard pairing is tied to a specific adapter's MAC address, so if you remove the UB500 you'll need to re-pair the keyboard to the built-in adapter on a different BLE profile (e.g. ADJUST + T for profile 4). The ZMK config already has `CONFIG_BT_CTLR_PHY_2M=n` in `corne_handwired.conf` to improve compatibility with Realtek-based adapters.
+The built-in Bluetooth 4.2 adapter on the HP laptop had issues pairing with the NRF52840. Using a TP-Link UB500 (Bluetooth 5.1) adapter resolved connection stability. The keyboard pairing is tied to a specific adapter's MAC address, so if you remove the UB500 you'll need to re-pair the keyboard to the built-in adapter on a different BLE profile (e.g. ADJUST + T for profile 4). The ZMK config already has `CONFIG_BT_CTLR_PHY_2M=n` in `config/corne_handwired.conf` to improve compatibility with Realtek-based adapters.
