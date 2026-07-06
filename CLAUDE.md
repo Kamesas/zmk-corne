@@ -22,10 +22,13 @@ with **nice_nano v2** controllers on both halves. Branch in active development:
   - SDA → **P1.13**
   - SCK (SCL) → **P1.11**
 - **Battery:** LiPo on the right half wired to nice_nano v2 `B+`/`B-` pads.
-  nice_nano v2 has an onboard voltage divider between B+ and **P0.31**, gated
-  by a P-MOSFET on P0.13. The `vbatt` node lives in the upstream
-  `nice_nano_v2.dts`, so `CONFIG_ZMK_BATTERY_REPORTING=y` is enough to turn
-  it on once P0.31 is free. Left half has no battery yet.
+  The `nice_nano//zmk` board variant (rev 2.0.0) measures the cell through
+  **VDDH** (`zmk,battery-nrf-vddh` in the upstream board overlay) — no ADC
+  pin involved. The P0.31 voltage divider is the **v1** circuit; on v2,
+  P0.13 is the ext-power control. So freeing P0.31 was not required for
+  battery reporting — the row-0 move to P1.07 is harmless but P0.31 is
+  usable again if a pin is ever needed. `CONFIG_ZMK_BATTERY_REPORTING=y`
+  is enough. Left half has no battery yet.
 - **Encoder:** removed for now. Will be relocated to the right half later.
   Original pin set was P1.07 (A) / P1.02 (B) / P1.01 (SW). P1.07 is now
   used by row 0, so a returning encoder needs a new "A" pin. Candidates:
